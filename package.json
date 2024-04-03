@@ -9,7 +9,8 @@
     "serve": "NODE_ENV=production node ./server.js",
     "dev": "node ./server.js",
     "typecheck": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint",
+    "format": "prettier . --write"
   },
   "keywords": [],
   "author": "",
@@ -28,10 +29,18 @@
   },
   "devDependencies": {
     "@remix-run/dev": "^2.8.1",
+    "@remix-run/eslint-config": "^2.8.1",
     "@types/node": "^20.12.2",
+    "eslint": "^8.57.0",
+    "prettier": "3.2.5",
     "prisma": "^5.12.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.3",
     "vite": "^5.2.7"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "printWidth": 260
   }
 }

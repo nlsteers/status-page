@@ -1,3 +1,7 @@
 h1.myH {
-    color: red;
+  color: red;
+}
+.govuk-notification-banner--error {
+  border-color: #d4351c;
+  background-color: #d4351c;
 }
