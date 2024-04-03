@@ -1,0 +1,74 @@
+// This is the Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [uuidOssp(map: "uuid-ossp")]
+}
+
+model Component {
+  id          String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  name        String          @db.VarChar(255)
+  description String?
+  status      ComponentStatus @default(OPERATIONAL)
+  incidents   Incident[]
+  live        Boolean         @default(false)
+}
+
+model Incident {
+  id          String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  createdAt   DateTime         @default(now())
+  Component   Component?       @relation(fields: [componentId], references: [id])
+  componentId String?          @db.Uuid
+  name        String
+  updates     IncidentUpdate[]
+}
+
+model IncidentUpdate {
+  id          String         @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  description String?
+  status      IncidentStatus
+  Incident    Incident       @relation(fields: [incidentId], references: [id])
+  incidentId  String         @db.Uuid
+}
+
+model EmailSubscriber {
+  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  createdAt   DateTime  @default(now())
+  confirmedAt DateTime?
+  confirmed   Boolean   @default(false)
+  email       String
+}
+
+model SMSSubscriber {
+  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  createdAt   DateTime  @default(now())
+  confirmedAt DateTime?
+  confirmed   Boolean   @default(false)
+  phoneNumber String
+}
+
+enum ComponentStatus {
+  OPERATIONAL
+  DEGRADED
+  MAINTENANCE
+  PARTIAL_OUTAGE
+  MAJOR_OUTAGE
+}
+
+enum IncidentStatus {
+  INVESTIGATING
+  IDENTIFIED
+  MONITORING
+  RESOLVED
+}
