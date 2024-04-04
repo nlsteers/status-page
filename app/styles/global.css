@@ -1,7 +1,88 @@
-h1.myH {
-  color: red;
+:root {
+    --govuk-text-colour: #0b0c0c;
+    --govuk-secondary-text-colour: #505a5f;
+    --govuk-link-colour: #1d70b8;
+    --govuk-link-hover-colour: #003078;
+    --govuk-link-visited-colour: #4c2c92;
+    --govuk-link-active-colour: #0b0c0c;
+    --govuk-border-colour: #b1b4b6;
+    --govuk-focus-colour: #ffdd00;
+    --govuk-focus-text-colour: #0b0c0c;
+    --govuk-error-colour: #d4351c;
+    --govuk-success-colour: #00703c;
+    --govuk-brand-colour: #1d70b8;
 }
+
 .govuk-notification-banner--error {
-  border-color: #d4351c;
-  background-color: #d4351c;
+    border-color: var(--govuk-error-colour) !important;
+    background-color: var(--govuk-error-colour) !important;
+}
+
+.govuk-secondary-text-colour {
+    color: var(--govuk-secondary-text-colour);
+}
+
+.govuk-inset-text--red {
+    border-left-color: var(--govuk-error-colour);
+}
+
+.govuk-inset-text--blue {
+    border-left-color: var(--govuk-brand-colour);
+}
+
+
+/* INCIDENT TIMELINE */
+
+.govuk-incident-timeline:before {
+    background-color: var(--govuk-brand-colour);
+    content: "";
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 10px;
+    width: 5px;
+}
+
+.govuk-incident-timeline {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    position: relative;
+}
+
+.govuk-incident-timeline__item:before {
+    background-color: var(--govuk-brand-colour);
+    content: "";
+    height: 5px;
+    left: 0;
+    position: absolute;
+    top: 10px;
+    width: 15px;
+}
+
+.govuk-incident-timeline__item {
+    padding-bottom: 30px;
+    padding-left: 20px;
+    position: relative;
+}
+
+.govuk-incident-timeline__item__date {
+    font-family: "GDS Transport", arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-weight: 400;
+    font-size: 1.1rem;
+    line-height: 1.25;
+    margin-top: 5px;
+    margin-bottom: 0;
+}
+
+.govuk-incident-timeline__item__description {
+    font-family: "GDS Transport", arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-weight: 400;
+    font-size: 1rem;
+    line-height: 1.25;
+    margin-top: 20px;
 }

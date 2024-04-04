@@ -7,7 +7,7 @@
   "scripts": {
     "build": "remix vite:build",
     "serve": "NODE_ENV=production node ./server.js",
-    "dev": "node ./server.js",
+    "dev": "node inspect ./server.js",
     "typecheck": "tsc",
     "lint": "eslint",
     "format": "prettier . --write"

@@ -1,8 +1,6 @@
 import type { LinksFunction, MetaFunction } from '@remix-run/node'
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from '@remix-run/react'
 import { Header, PhaseBanner, Footer } from './ui/base'
-import NotificationBanner from './ui/notificationBanner'
-import ErrorSummary from './ui/errorSummary'
 import { useEffect } from 'react'
 import './styles/global.css'
 
@@ -56,22 +54,14 @@ export default function App() {
   return (
     <html lang="en">
       <head>
-        <title>Pay Status</title>
+        <title>GOV.UK Pay Status</title>
         <Meta />
         <Links />
       </head>
       <body className="govuk-template__body app-body-class">
-        <Header title="Pay Status" />
-        <div className="govuk-width-container" style={{minHeight: "80vh"}}>
+        <Header title="Status" />
+        <div className="govuk-width-container" style={{ minHeight: '80vh' }}>
           <PhaseBanner />
-          <div style={{paddingTop: "10px"}}></div>
-          <NotificationBanner intent={"success"} header={"All systems operational"} message={""} />
-          <NotificationBanner intent={"error"} header={"Ongoing incident"} message={"Some services are currently impacted"} />
-          <ErrorSummary header={"Ongoing incident"} message={"Some services are currently impacted"} />
-          <h1 className="govuk-heading-l">govuk-heading-l</h1>
-          <h2 className="govuk-heading-m">govuk-heading-m</h2>
-          <h3 className="govuk-heading-s">govuk-heading-s</h3>
-          <button className="govuk-button">hello</button>
           <Outlet />
         </div>
         <Footer />

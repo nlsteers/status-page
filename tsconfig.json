@@ -2,7 +2,7 @@
   "include": ["**/*.ts", "**/*.tsx", "**/.server/**/*.ts", "**/.server/**/*.tsx", "**/.client/**/*.ts", "**/.client/**/*.tsx"],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
-    "typeRoots": ["@remix-run/node", "vite/client"],
+    "typeRoots": ["@remix-run/node", "vite/client", "app/types"],
     "isolatedModules": true,
     "esModuleInterop": true,
     "jsx": "react-jsx",
