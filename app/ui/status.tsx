@@ -19,7 +19,7 @@ export default function Status({ status }: StatusProps) {
     default:
       tagColour = 'red'
   }
-  return <strong style={{textAlign: "center", width:"100%"}} className={`govuk-tag govuk-tag--${tagColour}`}>{capitalise(status.replace(/_/g, ' '))}</strong>
+  return <strong className={`govuk-tag govuk-tag--${tagColour}`}>{capitalise(status.replace(/_/g, ' '))}</strong>
 }
 
 const capitalise = (s: string) => {

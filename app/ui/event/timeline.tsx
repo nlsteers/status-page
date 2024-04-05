@@ -1,17 +1,17 @@
 export default function EventTimeline() {
   return (
     <div className="govuk-incident-timeline">
-      <div className="govuk-incident-timeline__item">
-        <div className="govuk-incident-timeline__item__header">
-          <strong className={'govuk-tag govuk-tag--green'}>Resolved</strong>
-        </div>
-        <p className="govuk-incident-timeline__item__date">
-          <time dateTime="2019-06-14T14:01:00.000Z">4 April 2024 at 14:09</time>
-        </p>
-        <div className="govuk-incident-timeline__item__description">
-          <p className={'govuk-body'}>This incident has been resolved. All delayed email notifications have now been sent.</p>
-        </div>
-      </div>
+      {/*<div className="govuk-incident-timeline__item">*/}
+      {/*  <div className="govuk-incident-timeline__item__header">*/}
+      {/*    <strong style={{textAlign: "center", paddingLeft:"20px", paddingRight:"20px"}} className={'govuk-tag govuk-tag--green'}>Resolved</strong>*/}
+      {/*  </div>*/}
+      {/*  <p className="govuk-incident-timeline__item__date">*/}
+      {/*    <time dateTime="2019-06-14T14:01:00.000Z">4 April 2024 at 14:09</time>*/}
+      {/*  </p>*/}
+      {/*  <div className="govuk-incident-timeline__item__description">*/}
+      {/*    <p className={'govuk-body'}>This incident has been resolved. All delayed email notifications have now been sent.</p>*/}
+      {/*  </div>*/}
+      {/*</div>*/}
 
       <div className="govuk-incident-timeline__item">
         <div className="govuk-incident-timeline__item__header">
@@ -58,10 +58,10 @@ export default function EventTimeline() {
 
       <div className="govuk-incident-timeline__item">
         <div className="govuk-incident-timeline__item__header">
-          <strong className={'govuk-tag govuk-tag--purple'}>Update</strong>
+          <strong className={'govuk-tag govuk-tag--grey'}>Update</strong>
         </div>
         <p className="govuk-incident-timeline__item__date">
-          <time dateTime="2019-06-14T14:01:00.000Z">3 April 2024 at at 21:19</time>
+          <time dateTime="2019-06-14T14:01:00.000Z">3 April 2024 at 21:19</time>
         </p>
         <div className="govuk-incident-timeline__item__description">
           <p className={'govuk-body'}>We are aware that automated emails are not currently being sent. This includes payment receipts and refund confirmations. We are investigating the issue and will provide an update soon.</p>

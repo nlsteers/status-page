@@ -57,12 +57,12 @@
     left: 0;
     position: absolute;
     top: 10px;
-    width: 15px;
+    width: 30px;
 }
 
 .govuk-incident-timeline__item {
     padding-bottom: 30px;
-    padding-left: 20px;
+    padding-left: 35px;
     position: relative;
 }
 
@@ -70,10 +70,10 @@
     font-family: "GDS Transport", arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-weight: 400;
+    font-weight: 800;
     font-size: 1.1rem;
     line-height: 1.25;
-    margin-top: 5px;
+    margin-top: 15px;
     margin-bottom: 0;
 }
 

@@ -9,27 +9,28 @@ generator client {
 datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
+  directUrl  = env("MIGRATION_URL")
   extensions = [uuidOssp(map: "uuid-ossp")]
 }
 
 model Component {
-  id          String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime?       @updatedAt
-  name        String          @db.VarChar(255)
+  id          String              @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime?           @updatedAt
+  name        String              @db.VarChar(255)
   description String?
-  status      ComponentStatus @default(OPERATIONAL)
-  incidents   Incident[]
-  live        Boolean         @default(false)
+  status      ComponentStatus     @default(OPERATIONAL)
+  incidents   IncidentComponent[]
+  live        Boolean             @default(false)
 }
 
 model Incident {
-  id          String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  createdAt   DateTime         @default(now())
-  Component   Component?       @relation(fields: [componentId], references: [id])
-  componentId String?          @db.Uuid
+  id          String              @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  createdAt   DateTime            @default(now())
+  components  IncidentComponent[]
   name        String
   updates     IncidentUpdate[]
+  type        IncidentType
 }
 
 model IncidentUpdate {
@@ -40,6 +41,15 @@ model IncidentUpdate {
   status      IncidentStatus
   Incident    Incident       @relation(fields: [incidentId], references: [id])
   incidentId  String         @db.Uuid
+}
+
+model IncidentComponent {
+  componentId String    @db.Uuid
+  component   Component @relation(fields: [componentId], references: [id])
+  incidentId  String    @db.Uuid
+  incident    Incident  @relation(fields: [incidentId], references: [id])
+
+  @@id([componentId, incidentId])
 }
 
 model EmailSubscriber {
@@ -71,4 +81,12 @@ enum IncidentStatus {
   IDENTIFIED
   MONITORING
   RESOLVED
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum IncidentType {
+  MAINTENANCE
+  INCIDENT
 }

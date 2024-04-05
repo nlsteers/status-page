@@ -62,6 +62,7 @@ export default function App() {
         <Header title="Status" />
         <div className="govuk-width-container" style={{ minHeight: '80vh' }}>
           <PhaseBanner />
+          <div style={{ paddingTop: '10px' }}></div>
           <Outlet />
         </div>
         <Footer />
