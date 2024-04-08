@@ -25,12 +25,13 @@ model Component {
 }
 
 model Incident {
-  id          String              @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  createdAt   DateTime            @default(now())
-  components  IncidentComponent[]
-  name        String
-  updates     IncidentUpdate[]
-  type        IncidentType
+  id         String              @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  createdAt  DateTime            @default(now())
+  components IncidentComponent[]
+  name       String
+  updates    IncidentUpdate[]
+  type       IncidentType
+  active     Boolean             @default(true)
 }
 
 model IncidentUpdate {
@@ -39,15 +40,15 @@ model IncidentUpdate {
   updatedAt   DateTime?      @updatedAt
   description String?
   status      IncidentStatus
-  Incident    Incident       @relation(fields: [incidentId], references: [id])
+  Incident    Incident       @relation(fields: [incidentId], references: [id], onDelete: Cascade)
   incidentId  String         @db.Uuid
 }
 
 model IncidentComponent {
   componentId String    @db.Uuid
-  component   Component @relation(fields: [componentId], references: [id])
+  component   Component @relation(fields: [componentId], references: [id], onDelete: Cascade)
   incidentId  String    @db.Uuid
-  incident    Incident  @relation(fields: [incidentId], references: [id])
+  incident    Incident  @relation(fields: [incidentId], references: [id], onDelete: Cascade)
 
   @@id([componentId, incidentId])
 }

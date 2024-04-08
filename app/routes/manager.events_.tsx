@@ -1,8 +1,8 @@
 import { Link, Outlet, useLoaderData } from '@remix-run/react'
 import { json, LoaderFunction } from '@remix-run/node'
-import type { Component, ComponentStatus, Incident } from '@prisma/client'
+import type { Incident } from '@prisma/client'
 import prisma from '../.server/db'
-
+import Status from '../ui/status'
 
 export const loader: LoaderFunction = async () => {
   const incidents: Incident[] = await prisma.incident.findMany()
@@ -19,13 +19,16 @@ export default function EventsManager() {
       <table className="govuk-table">
         <caption className="govuk-table__caption govuk-table__caption--l">Events</caption>
         <tbody className="govuk-table__body">
-        {incidents
-          .map((incident: { id: string, name: string }) => (
+          {incidents.map((incident: { id: string; name: string; active: boolean }) => (
             <tr className="govuk-table__row" key={incident.id}>
               <th scope="row" className="govuk-table__cell">
                 {incident.name}
               </th>
+              <td className="govuk-table__cell">
+                {incident.active ? <Status status={'ACTIVE'} /> : <Status status={'INACTIVE'} />}
+              </td>
               <td className="govuk-table__cell govuk-table__cell--numeric">
+                <Link to={`/manager/events/update/${incident.id}`}>Update</Link> |{' '}
                 <Link to={`/manager/events/edit/${incident.id}`}>Edit</Link>
               </td>
             </tr>
@@ -44,4 +47,3 @@ export default function EventsManager() {
     </div>
   )
 }
-

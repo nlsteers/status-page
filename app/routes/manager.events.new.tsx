@@ -1,8 +1,9 @@
 import { ActionFunctionArgs, json, type LoaderFunction } from '@remix-run/node'
 import { Form, Link, useActionData, useLoaderData } from '@remix-run/react'
-import { type Component, Incident, IncidentType } from '@prisma/client'
+import { type Component, IncidentStatus, IncidentType } from '@prisma/client'
 import { createIncidentAndLinkToExistingComponents } from '../.server/queries'
 import prisma from '../.server/db'
+import { type IncidentUpdateDao } from '../types/dao'
 
 
 export const loader: LoaderFunction = async () => {
@@ -16,7 +17,7 @@ export default function NewEvent() {
   const data = useActionData<typeof action>()
   return (
     <div>
-      <Link to="/manager" className="govuk-back-link">
+      <Link to="/manager/events" className="govuk-back-link">
         Back
       </Link>
       <Form method="post">
@@ -40,7 +41,7 @@ export default function NewEvent() {
             <label className="govuk-label" htmlFor="event-name">
               Event name
             </label>
-            <input className="govuk-input govuk-!-width-two-thirds" id="event-name" name="eventName" type="text" autoComplete="event-name" />
+            <input className="govuk-input govuk-!-width-two-thirds" id="event-name" name="eventName" type="text" />
           </div>
           <div className="govuk-form-group">
             <label className="govuk-label" htmlFor="event-type">
@@ -70,11 +71,14 @@ export async function action({ request }: ActionFunctionArgs) {
   const type = body.get('eventType') as IncidentType
   const name = body.get('eventName') as string
   const components = body.getAll('components') as string[]
-  const result = await createIncidentAndLinkToExistingComponents(components, name, type)
+  const defaultUpdate: IncidentUpdateDao = {
+    status: type === IncidentType.INCIDENT ? IncidentStatus.INVESTIGATING : IncidentStatus.SCHEDULED,
+    description: 'We are currently investigating this issue.'
+  }
+  const result = await createIncidentAndLinkToExistingComponents(components, name, type, defaultUpdate)
   if (result !== null && result !== undefined) {
     return json({ message: `event id: ${result.id} created` })
   } else {
     return json({ message: `problem persisting event` })
   }
-
 }

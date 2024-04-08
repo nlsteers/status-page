@@ -1,42 +1,109 @@
-import type { Component } from '@prisma/client'
-import { ComponentStatus } from '@prisma/client'
-import type { LoaderFunction } from '@remix-run/node'
+import {
+  type Component,
+  ComponentStatus,
+  type IncidentComponent,
+  IncidentType,
+} from '@prisma/client'
+import { json, type LoaderFunction } from '@remix-run/node'
 import prisma from '../.server/db'
 import { Link, useLoaderData } from '@remix-run/react'
 import NotificationBanner from '../ui/notificationBanner'
 import Status from '../ui/status'
+import ActiveEventSummary from '../ui/event/activeEventSummary'
+import { type IncidentWithUpdatesAndIncidentComponents, type IndexEvent } from '../types/dao'
 
-interface IndexLoaderData {
-  components: Component[]
-  allOperational: boolean
-}
+export const loader: LoaderFunction = async () => {
+  const components: Component[] = await prisma.component.findMany({
+    orderBy: {
+      name: 'asc',
+    },
+  })
 
-export const loader: LoaderFunction = async (): Promise<IndexLoaderData> => {
-  const components: Component[] = await prisma.component.findMany()
-  const allOperational = components.every((component : Component) : boolean => component.status === ComponentStatus.OPERATIONAL)
-  return { components, allOperational }
+  const events: IncidentWithUpdatesAndIncidentComponents[] = await prisma.incident.findMany({
+    where: {
+      active: true,
+    },
+    include: {
+      updates: {
+        orderBy: {
+          createdAt: 'desc',
+        },
+        take: 1,
+      },
+      components: true,
+    },
+  })
+
+  const indexEvents: IndexEvent[] = events.map(
+    (event: IncidentWithUpdatesAndIncidentComponents) => {
+      const eventComponents: Component[] = event.components
+        ? (event.components.map((ic: IncidentComponent) =>
+            components.find((c: Component) => ic.componentId === c.id),
+          ) as Component[])
+        : ([] as Component[])
+      const indexEvent: IndexEvent = {
+        event: {
+          id: event.id,
+          createdAt: event.createdAt,
+          name: event.name,
+          type: event.type,
+          active: event.active,
+        },
+        components: eventComponents,
+        updates: event.updates,
+      }
+      return indexEvent
+    },
+  )
+  const incidents: IndexEvent[] = Array.from(
+    indexEvents.filter((i: IndexEvent) => i.event.type === IncidentType.INCIDENT),
+  )
+  const maintenance: IndexEvent[] = Array.from(
+    indexEvents.filter((i: IndexEvent) => i.event.type === IncidentType.MAINTENANCE),
+  )
+  const allOperational = components.every(
+    (component: Component): boolean => component.status === ComponentStatus.OPERATIONAL,
+  )
+  return json({
+    components,
+    indexEvents,
+    incidents,
+    maintenance,
+    allOperational,
+  })
 }
 
 export default function _index() {
-  const { components, allOperational } = useLoaderData<IndexLoaderData>()
+  const {
+    components,
+    indexEvents,
+    incidents,
+    maintenance,
+    allOperational,
+  } = useLoaderData<typeof loader>()
   return (
     <div>
-      {allOperational && <NotificationBanner intent={'success'} header={'All systems operational'} message={''} />}
-      <NotificationBanner
-        intent={'error'}
-        header={'Partial system outage'}
-        message={'Email notifications are currently unavailable'}
-      />
-      {/*<NotificationBanner intent={'info'} header={'Scheduled maintenance in progress'}*/}
-      {/*                    message={'GOV.UK Pay will be unavailable between TIME on DATE'} />*/}
+      {allOperational && (
+        <NotificationBanner intent={'success'} header={'All systems operational'} messages={['']} />
+      )}
+      {incidents.length > 0 && (
+        <NotificationBanner
+          intent={'error'}
+          header={'Problems reported'}
+          messages={incidents.map((event: IndexEvent) => event.event.name)}
+        />
+      )}
+      {maintenance.length > 0 && (
+        <NotificationBanner
+          intent={''}
+          header={'Maintenance'}
+          messages={maintenance.map((event: IndexEvent) => event.event.name)}
+        />
+      )}
       <table className="govuk-table">
         <caption className="govuk-table__caption govuk-table__caption--l">System overview</caption>
         <tbody className="govuk-table__body">
-        {components
-          .sort((a, b) => {
-            return a.name.localeCompare(b.name)
-          })
-          .map((component: { id: string; name: string; status: ComponentStatus }) => (
+          {components.map((component: { id: string; name: string; status: ComponentStatus }) => (
             <tr className="govuk-table__row" key={component.id}>
               <th scope="row" className="govuk-table__header">
                 {component.name}
@@ -51,37 +118,16 @@ export default function _index() {
 
       <h1 className={'govuk-heading-l'}>Active events</h1>
 
-      <div className="govuk-inset-text govuk-inset-text--red">
-        <strong className="govuk-tag govuk-tag--red">Incident</strong>&nbsp;
-        <strong className="govuk-tag">Monitoring</strong>
-        <h3>Email notifications are currently unavailable</h3>
-        <p>Systems affected:</p>
-        <ul>
-          <li>Email Notifications</li>
-        </ul>
-        <p>
-          Last updated: <time dateTime="2019-06-14T14:01:00.000Z">4 April 2024 at 14:09</time>
-        </p>
-        <Link to={'/event/blah'} className={'govuk-link'}>See timeline</Link>
-      </div>
+      {indexEvents.length < 1 && <p className={`govuk-body`}>No active events</p>}
 
-      <div className="govuk-inset-text govuk-inset-text--red">
-        <strong className="govuk-tag govuk-tag--red">Incident</strong>&nbsp;
-        <strong className="govuk-tag govuk-tag--orange">Investigating</strong>
-        <h3>Example incident </h3>
-        <p>Systems affected:</p>
-        <ul>
-          <li>Stripe</li>
-        </ul>
-        <p>
-          Last updated: <time dateTime="2019-06-14T14:01:00.000Z">4 April 2024 at 14:09</time>
-        </p>
-        <Link to={'/'} className={'govuk-link'}>See timeline</Link>
-      </div>
+      {indexEvents.map((event: IndexEvent) => (
+        <ActiveEventSummary event={event} key={event.event.id} />
+      ))}
 
-      <Link to={'/pastEvents'} className={'govuk-link'}>Event history &gt;</Link>
-      <br/>
-      <div style={{ paddingBottom: '20px' }}></div>
+      <Link to={'/history'} className={'govuk-link'}>
+        Event history &gt;
+      </Link>
+      <br />
     </div>
   )
 }

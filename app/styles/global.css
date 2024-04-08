@@ -50,6 +50,7 @@
     position: relative;
 }
 
+
 .govuk-incident-timeline__item:before {
     background-color: var(--govuk-brand-colour);
     content: "";
@@ -60,10 +61,16 @@
     width: 30px;
 }
 
+
+
 .govuk-incident-timeline__item {
-    padding-bottom: 30px;
+    padding-bottom: 20px;
     padding-left: 35px;
     position: relative;
+}
+
+.govuk-incident-timeline__item:last-of-type {
+    padding-bottom: 10px;
 }
 
 .govuk-incident-timeline__item__date {

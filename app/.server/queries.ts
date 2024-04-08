@@ -1,7 +1,8 @@
 import prisma from './db'
-import { Component, Incident, IncidentType, IncidentUpdate } from '@prisma/client'
+import { Component, ComponentStatus, IncidentType } from '@prisma/client'
+import { type IncidentUpdateDao } from '../types/dao'
 
-async function createIncidentAndLinkToExistingComponents(componentIds: string[], name: string, type: IncidentType) {
+async function createIncidentAndLinkToExistingComponents(componentIds: string[], name: string, type: IncidentType, defaultUpdate: IncidentUpdateDao) {
   try {
     const newIncident = await prisma.incident.create({
       data: {
@@ -17,16 +18,16 @@ async function createIncidentAndLinkToExistingComponents(componentIds: string[],
             },
           })),
         },
-        // Optionally, add any initial updates for the incident
-        // updates: {
-        //   create: [
-        //     { content: 'Initial report of network outage.' },
-        //     { content: 'Technicians have been dispatched.' },
-        //   ],
-        // },
+        updates: {
+          create: [
+            {
+              description: defaultUpdate.description,
+              status: defaultUpdate.status
+            }
+          ],
+        },
       },
     });
-
     console.log('Incident created and linked to existing components:', newIncident);
     return newIncident;
   } catch (error) {
@@ -34,7 +35,7 @@ async function createIncidentAndLinkToExistingComponents(componentIds: string[],
   }
 }
 
-async function createIncidentUpdate(incidentUpdate: IncidentUpdate, incidentId: string) {
+async function createIncidentUpdate(incidentUpdate: IncidentUpdateDao, incidentId: string) {
   try {
     const newIncidentUpdate = await prisma.incidentUpdate.create({
       data: {
@@ -42,8 +43,7 @@ async function createIncidentUpdate(incidentUpdate: IncidentUpdate, incidentId: 
         description: incidentUpdate.description,
         incidentId: incidentId
       },
-    });
-
+    })
     console.log('Incident update created:', newIncidentUpdate);
     return newIncidentUpdate;
   } catch (error) {
@@ -68,8 +68,70 @@ async function createComponent(component: Component) {
   }
 }
 
+async function updateComponent(id: string, name: string, description: string, status: ComponentStatus) {
+  const now = new Date();
+  try {
+    const updatedComponent = await prisma.component.update({
+      where: {
+        id
+      },
+      data: {
+        name,
+        description,
+        status,
+        updatedAt: now
+      },
+    });
+
+    console.log('Component updated:', updatedComponent);
+    return updatedComponent;
+  } catch (error) {
+    console.error('Error updating component:', error);
+  }
+}
+
+async function updateIncident(id: string, name: string, type: IncidentType, active: boolean) {
+  try {
+    const updatedComponent = await prisma.incident.update({
+      where: {
+        id
+      },
+      data: {
+        name,
+        type,
+        active
+      },
+    });
+    console.log('Incident updated:', updatedComponent);
+    return updatedComponent;
+  } catch (error) {
+    console.error('Error updating incident:', error);
+  }
+}
+
+async function deleteIncident(id: string) {
+  try {
+    const result = await prisma.incident.delete({
+      where: {
+        id
+      },
+      include: {
+        updates: true
+      }
+    });
+    console.log('Incident deleted:', result.id);
+    return result;
+  } catch (error) {
+    console.error('Error deleting incident:', error);
+  }
+}
+
+
 export {
   createIncidentAndLinkToExistingComponents,
   createComponent,
+  updateComponent,
+  updateIncident,
+  deleteIncident,
   createIncidentUpdate
 }

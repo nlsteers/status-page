@@ -60,10 +60,11 @@ export default function App() {
       </head>
       <body className="govuk-template__body app-body-class">
         <Header title="Status" />
-        <div className="govuk-width-container" style={{ minHeight: '80vh' }}>
+        <div className="govuk-width-container" style={{ minHeight: '85vh' }}>
           <PhaseBanner />
           <div style={{ paddingTop: '10px' }}></div>
           <Outlet />
+          <div style={{ paddingBottom: '20px' }}></div>
         </div>
         <Footer />
         <ScrollRestoration />

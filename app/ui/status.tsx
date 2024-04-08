@@ -1,27 +1,40 @@
-import { ComponentStatus } from '@prisma/client'
+import { IncidentStatus, ComponentStatus, IncidentType } from '@prisma/client'
+import friendlyStatus from '../helper/friendlyStatus'
 
 interface StatusProps {
-  status: ComponentStatus
+  status: ComponentStatus | IncidentStatus | IncidentType | string
 }
 
 export default function Status({ status }: StatusProps) {
   let tagColour
   switch (status) {
     case ComponentStatus.OPERATIONAL:
+    case IncidentStatus.COMPLETED:
+    case IncidentStatus.RESOLVED:
+    case 'ACTIVE':
       tagColour = 'green'
       break
     case ComponentStatus.DEGRADED:
       tagColour = 'yellow'
       break
     case ComponentStatus.MAINTENANCE:
+    case IncidentStatus.MONITORING:
+    case IncidentType.MAINTENANCE:
       tagColour = 'blue'
       break
-    default:
+    case IncidentStatus.INVESTIGATING:
+      tagColour = 'orange'
+      break
+    case IncidentStatus.IDENTIFIED:
+      tagColour = 'light-blue'
+      break
+    case ComponentStatus.MAJOR_OUTAGE:
+    case ComponentStatus.PARTIAL_OUTAGE:
+    case IncidentType.INCIDENT:
       tagColour = 'red'
+      break
+    default:
+      tagColour = 'grey'
   }
-  return <strong className={`govuk-tag govuk-tag--${tagColour}`}>{capitalise(status.replace(/_/g, ' '))}</strong>
-}
-
-const capitalise = (s: string) => {
-  return s[0].toUpperCase() + s.slice(1).toLowerCase()
+  return <strong className={`govuk-tag govuk-tag--${tagColour}`}>{friendlyStatus(status)}</strong>
 }
