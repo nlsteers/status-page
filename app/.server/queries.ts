@@ -1,19 +1,24 @@
 import prisma from './db'
-import { Component, ComponentStatus, IncidentType } from '@prisma/client'
-import { type IncidentUpdateDao } from '../types/dao'
+import { EventType, SystemStatus } from '@prisma/client'
+import { type EventUpdateDao } from '../types/events'
 
-async function createIncidentAndLinkToExistingComponents(componentIds: string[], name: string, type: IncidentType, defaultUpdate: IncidentUpdateDao) {
+async function createEventAndLinkToExistingSystems(
+  systemIds: string[],
+  name: string,
+  type: EventType,
+  defaultUpdate: EventUpdateDao,
+) {
   try {
-    const newIncident = await prisma.incident.create({
+    const newEvent = await prisma.event.create({
       data: {
         name,
         type,
 
-        components: {
-          create: componentIds.map((componentId) => ({
-            component: {
+        systems: {
+          create: systemIds.map((id) => ({
+            system: {
               connect: {
-                id: componentId,
+                id
               },
             },
           })),
@@ -22,116 +27,163 @@ async function createIncidentAndLinkToExistingComponents(componentIds: string[],
           create: [
             {
               description: defaultUpdate.description,
-              status: defaultUpdate.status
-            }
+              status: defaultUpdate.status,
+            },
           ],
         },
       },
-    });
-    console.log('Incident created and linked to existing components:', newIncident);
-    return newIncident;
+    })
+    console.log('Event created and linked to existing systems:', newEvent)
+    return newEvent
   } catch (error) {
-    console.error('Error creating incident:', error);
+    console.error('Error creating event:', error)
   }
 }
 
-async function createIncidentUpdate(incidentUpdate: IncidentUpdateDao, incidentId: string) {
+async function createEventUpdate(eventUpdate: EventUpdateDao, eventId: string) {
   try {
-    const newIncidentUpdate = await prisma.incidentUpdate.create({
+    const newEventUpdate = await prisma.eventUpdate.create({
       data: {
-        status: incidentUpdate.status,
-        description: incidentUpdate.description,
-        incidentId: incidentId
+        status: eventUpdate.status,
+        description: eventUpdate.description,
+        eventId
       },
     })
-    console.log('Incident update created:', newIncidentUpdate);
-    return newIncidentUpdate;
+    console.log('Event update created:', newEventUpdate)
+    return newEventUpdate
   } catch (error) {
-    console.error('Error creating incident update:', error);
+    console.error('Error creating event update:', error)
   }
 }
 
 
-async function createComponent(component: Component) {
+async function createSystem(name: string, description: string, status: SystemStatus) {
   try {
-    const newComponent = await prisma.component.create({
+    const newSystem = await prisma.system.create({
       data: {
-        name: component.name,
-        description: component.description
+        name,
+        description,
+        status
       },
-    });
+    })
 
-    console.log('Component created:', newComponent);
-    return newComponent;
+    console.log('System created:', newSystem)
+    return newSystem
   } catch (error) {
-    console.error('Error creating component:', error);
+    console.error('Error creating system:', error)
   }
 }
 
-async function updateComponent(id: string, name: string, description: string, status: ComponentStatus) {
-  const now = new Date();
+async function updateSystem(
+  id: string,
+  name: string,
+  description: string,
+  status: SystemStatus,
+) {
+  const now = new Date()
   try {
-    const updatedComponent = await prisma.component.update({
+    const updatedSystem = await prisma.system.update({
       where: {
-        id
+        id,
       },
       data: {
         name,
         description,
         status,
-        updatedAt: now
+        updatedAt: now,
       },
-    });
+    })
 
-    console.log('Component updated:', updatedComponent);
-    return updatedComponent;
+    console.log('System updated:', updatedSystem)
+    return updatedSystem
   } catch (error) {
-    console.error('Error updating component:', error);
+    console.error('Error updating system:', error)
   }
 }
 
-async function updateIncident(id: string, name: string, type: IncidentType, active: boolean) {
+async function updateEvent(id: string, name: string, type: EventType, active: boolean) {
   try {
-    const updatedComponent = await prisma.incident.update({
+    const updatedEvent = await prisma.event.update({
       where: {
-        id
+        id,
       },
       data: {
         name,
         type,
-        active
+        active,
       },
-    });
-    console.log('Incident updated:', updatedComponent);
-    return updatedComponent;
+    })
+    console.log('Event updated:', updatedEvent)
+    return updatedEvent
   } catch (error) {
-    console.error('Error updating incident:', error);
+    console.error('Error updating event:', error)
   }
 }
 
-async function deleteIncident(id: string) {
+async function updateEventAndRelinkComponents(
+  id: string,
+  name: string,
+  type: EventType,
+  active: boolean,
+  newSystems: string[],
+) {
   try {
-    const result = await prisma.incident.delete({
+    const deleteEventSystems = await prisma.eventSystem.deleteMany({
       where: {
-        id
+        eventId: id
+      }
+    })
+    console.log('Systems unlinked:', deleteEventSystems.count)
+    const updatedEvent = await prisma.event.update({
+      where: {
+        id,
+      },
+      data: {
+        name,
+        type,
+        active,
+
+        systems: {
+          create: newSystems.map((id) => ({
+            system: {
+              connect: {
+                id
+              },
+            },
+          })),
+        },
+      },
+    })
+    console.log('Event updated:', updatedEvent)
+    return updatedEvent
+  } catch (error) {
+    console.error('Error updating event:', error)
+  }
+}
+
+async function deleteEvent(id: string) {
+  try {
+    const result = await prisma.event.delete({
+      where: {
+        id,
       },
       include: {
-        updates: true
-      }
-    });
-    console.log('Incident deleted:', result.id);
-    return result;
+        updates: true,
+      },
+    })
+    console.log('Event deleted:', result.id)
+    return result
   } catch (error) {
-    console.error('Error deleting incident:', error);
+    console.error('Error deleting event:', error)
   }
 }
 
-
 export {
-  createIncidentAndLinkToExistingComponents,
-  createComponent,
-  updateComponent,
-  updateIncident,
-  deleteIncident,
-  createIncidentUpdate
+  createEventAndLinkToExistingSystems,
+  createSystem,
+  updateSystem,
+  updateEvent,
+  updateEventAndRelinkComponents,
+  deleteEvent,
+  createEventUpdate,
 }

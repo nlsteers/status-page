@@ -1,38 +1,41 @@
-import { ActionFunctionArgs, json, type LoaderFunction } from '@remix-run/node'
+import { type ActionFunctionArgs, json, type LoaderFunction, redirect } from '@remix-run/node'
 import { Form, Link, useActionData, useLoaderData } from '@remix-run/react'
-import { type Component, IncidentStatus, IncidentType } from '@prisma/client'
-import { createIncidentAndLinkToExistingComponents } from '../.server/queries'
+import { createEventAndLinkToExistingSystems } from '../.server/queries'
 import prisma from '../.server/db'
-import { type IncidentUpdateDao } from '../types/dao'
+import { type EventUpdateDao } from '../types/events'
+import { EventStatus, EventType, type System } from '@prisma/client'
 
-
-export const loader: LoaderFunction = async () => {
-  const components: Component[] = await prisma.component.findMany()
-  return json(components)
+export const handle = {
+  Breadcrumb: () => <Link className={'govuk-breadcrumbs__link'} to="/manager/events/new">New event</Link>,
 }
 
+export const loader: LoaderFunction = async () => {
+  const systems: System[] = await prisma.system.findMany()
+  return json(systems)
+}
 
 export default function NewEvent() {
-  const components = useLoaderData<typeof loader>()
+  const systems = useLoaderData<typeof loader>()
   const data = useActionData<typeof action>()
   return (
     <div>
-      <Link to="/manager/events" className="govuk-back-link">
-        Back
-      </Link>
+      <h2 className="govuk-heading-m">New Event</h2>
       <Form method="post">
         <fieldset className="govuk-fieldset">
-          <legend className="govuk-fieldset__legend govuk-fieldset__legend--l">
-            <h1 className="govuk-fieldset__heading">New Event</h1>
-          </legend>
           <div className="govuk-form-group">
-            <label className="govuk-label" htmlFor="components">
-              Affected System
+            <label className="govuk-label" htmlFor="systems">
+              Link Systems
             </label>
-            <select style={{height:"150px"}} className="govuk-select" id="components" name="components" multiple>
-              {components.map((c: Component) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
+            <select
+              style={{ height: '150px' }}
+              className="govuk-select"
+              id="systems"
+              name="systems"
+              multiple
+            >
+              {systems.map((s: System) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
                 </option>
               ))}
             </select>
@@ -41,14 +44,19 @@ export default function NewEvent() {
             <label className="govuk-label" htmlFor="event-name">
               Event name
             </label>
-            <input className="govuk-input govuk-!-width-two-thirds" id="event-name" name="eventName" type="text" />
+            <input
+              className="govuk-input govuk-!-width-two-thirds"
+              id="event-name"
+              name="eventName"
+              type="text"
+            />
           </div>
           <div className="govuk-form-group">
             <label className="govuk-label" htmlFor="event-type">
               Event type
             </label>
             <select className="govuk-select" id="event-type" name="eventType">
-              {Object.values(IncidentType).map((type) => (
+              {Object.values(EventType).map((type) => (
                 <option key={type} value={type}>
                   {type}
                 </option>
@@ -56,7 +64,7 @@ export default function NewEvent() {
             </select>
           </div>
           <button type="submit" className="govuk-button" data-module="govuk-button">
-            Save and continue
+            Add event
           </button>
         </fieldset>
 
@@ -68,16 +76,19 @@ export default function NewEvent() {
 
 export async function action({ request }: ActionFunctionArgs) {
   const body = await request.formData()
-  const type = body.get('eventType') as IncidentType
+  const type = body.get('eventType') as EventType
   const name = body.get('eventName') as string
-  const components = body.getAll('components') as string[]
-  const defaultUpdate: IncidentUpdateDao = {
-    status: type === IncidentType.INCIDENT ? IncidentStatus.INVESTIGATING : IncidentStatus.SCHEDULED,
-    description: 'We are currently investigating this issue.'
+  const systems = body.getAll('systems') as string[]
+  const defaultUpdate: EventUpdateDao = {
+    status: type === EventType.INCIDENT ? EventStatus.INVESTIGATING : EventStatus.SCHEDULED,
+    description:
+      type === EventType.INCIDENT
+        ? 'We are currently investigating this issue.'
+        : 'Maintenance is scheduled.',
   }
-  const result = await createIncidentAndLinkToExistingComponents(components, name, type, defaultUpdate)
+  const result = await createEventAndLinkToExistingSystems(systems, name, type, defaultUpdate)
   if (result !== null && result !== undefined) {
-    return json({ message: `event id: ${result.id} created` })
+    return redirect('/manager/events')
   } else {
     return json({ message: `problem persisting event` })
   }

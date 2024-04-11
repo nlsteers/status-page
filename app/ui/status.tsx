@@ -1,36 +1,36 @@
-import { IncidentStatus, ComponentStatus, IncidentType } from '@prisma/client'
 import friendlyStatus from '../helper/friendlyStatus'
+import { EventStatus, EventType, SystemStatus } from '@prisma/client'
 
 interface StatusProps {
-  status: ComponentStatus | IncidentStatus | IncidentType | string
+  status: SystemStatus | EventStatus | EventType | string
 }
 
 export default function Status({ status }: StatusProps) {
   let tagColour
   switch (status) {
-    case ComponentStatus.OPERATIONAL:
-    case IncidentStatus.COMPLETED:
-    case IncidentStatus.RESOLVED:
+    case SystemStatus.OPERATIONAL:
+    case EventStatus.COMPLETED:
+    case EventStatus.RESOLVED:
     case 'ACTIVE':
       tagColour = 'green'
       break
-    case ComponentStatus.DEGRADED:
+    case SystemStatus.DEGRADED:
       tagColour = 'yellow'
       break
-    case ComponentStatus.MAINTENANCE:
-    case IncidentStatus.MONITORING:
-    case IncidentType.MAINTENANCE:
+    case SystemStatus.MAINTENANCE:
+    case EventStatus.MONITORING:
+    case EventType.MAINTENANCE:
       tagColour = 'blue'
       break
-    case IncidentStatus.INVESTIGATING:
+    case EventStatus.INVESTIGATING:
       tagColour = 'orange'
       break
-    case IncidentStatus.IDENTIFIED:
+    case EventStatus.IDENTIFIED: case EventStatus.IN_PROGRESS:
       tagColour = 'light-blue'
       break
-    case ComponentStatus.MAJOR_OUTAGE:
-    case ComponentStatus.PARTIAL_OUTAGE:
-    case IncidentType.INCIDENT:
+    case SystemStatus.MAJOR_OUTAGE:
+    case SystemStatus.PARTIAL_OUTAGE:
+    case EventType.INCIDENT:
       tagColour = 'red'
       break
     default:

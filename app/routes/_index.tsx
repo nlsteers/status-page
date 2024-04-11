@@ -1,8 +1,6 @@
 import {
-  type Component,
-  ComponentStatus,
-  type IncidentComponent,
-  IncidentType,
+  type EventSystem, EventType,
+  type System, SystemStatus
 } from '@prisma/client'
 import { json, type LoaderFunction } from '@remix-run/node'
 import prisma from '../.server/db'
@@ -10,16 +8,16 @@ import { Link, useLoaderData } from '@remix-run/react'
 import NotificationBanner from '../ui/notificationBanner'
 import Status from '../ui/status'
 import ActiveEventSummary from '../ui/event/activeEventSummary'
-import { type IncidentWithUpdatesAndIncidentComponents, type IndexEvent } from '../types/dao'
+import { type EventWithUpdatesAndEventSystems, type IndexEvent } from '../types/events'
 
 export const loader: LoaderFunction = async () => {
-  const components: Component[] = await prisma.component.findMany({
+  const systems: System[] = await prisma.system.findMany({
     orderBy: {
       name: 'asc',
     },
   })
 
-  const events: IncidentWithUpdatesAndIncidentComponents[] = await prisma.incident.findMany({
+  const events: EventWithUpdatesAndEventSystems[] = await prisma.event.findMany({
     where: {
       active: true,
     },
@@ -30,42 +28,36 @@ export const loader: LoaderFunction = async () => {
         },
         take: 1,
       },
-      components: true,
+      systems: true,
     },
   })
 
   const indexEvents: IndexEvent[] = events.map(
-    (event: IncidentWithUpdatesAndIncidentComponents) => {
-      const eventComponents: Component[] = event.components
-        ? (event.components.map((ic: IncidentComponent) =>
-            components.find((c: Component) => ic.componentId === c.id),
-          ) as Component[])
-        : ([] as Component[])
+    (event: EventWithUpdatesAndEventSystems) => {
+      const eventSystems: System[] = event.systems
+        ? (event.systems.map((es: EventSystem) =>
+            systems.find((s: System) => es.systemId === s.id),
+          ) as System[])
+        : ([] as System[])
       const indexEvent: IndexEvent = {
-        event: {
-          id: event.id,
-          createdAt: event.createdAt,
-          name: event.name,
-          type: event.type,
-          active: event.active,
-        },
-        components: eventComponents,
+        event: event,
+        systems: eventSystems,
         updates: event.updates,
       }
       return indexEvent
     },
   )
   const incidents: IndexEvent[] = Array.from(
-    indexEvents.filter((i: IndexEvent) => i.event.type === IncidentType.INCIDENT),
+    indexEvents.filter((i: IndexEvent) => i.event.type === EventType.INCIDENT),
   )
   const maintenance: IndexEvent[] = Array.from(
-    indexEvents.filter((i: IndexEvent) => i.event.type === IncidentType.MAINTENANCE),
+    indexEvents.filter((i: IndexEvent) => i.event.type === EventType.MAINTENANCE),
   )
-  const allOperational = components.every(
-    (component: Component): boolean => component.status === ComponentStatus.OPERATIONAL,
+  const allOperational = systems.every(
+    (system: System): boolean => system.status === SystemStatus.OPERATIONAL,
   )
   return json({
-    components,
+    systems,
     indexEvents,
     incidents,
     maintenance,
@@ -75,7 +67,7 @@ export const loader: LoaderFunction = async () => {
 
 export default function _index() {
   const {
-    components,
+    systems,
     indexEvents,
     incidents,
     maintenance,
@@ -103,13 +95,13 @@ export default function _index() {
       <table className="govuk-table">
         <caption className="govuk-table__caption govuk-table__caption--l">System overview</caption>
         <tbody className="govuk-table__body">
-          {components.map((component: { id: string; name: string; status: ComponentStatus }) => (
-            <tr className="govuk-table__row" key={component.id}>
+          {systems.map((system: { id: string; name: string; status: SystemStatus }) => (
+            <tr className="govuk-table__row" key={system.id}>
               <th scope="row" className="govuk-table__header">
-                {component.name}
+                {system.name}
               </th>
               <td className="govuk-table__cell govuk-table__cell--numeric">
-                <Status status={component.status} />
+                <Status status={system.status} />
               </td>
             </tr>
           ))}

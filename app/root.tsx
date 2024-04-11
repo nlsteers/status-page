@@ -52,17 +52,16 @@ function useGovUkFrontendJavascript(scriptsDir: string) {
 export default function App() {
   useGovUkFrontendJavascript('scripts')
   return (
-    <html lang="en">
+    <html lang="en" className={'govuk-template'}>
       <head>
         <title>GOV.UK Pay Status</title>
         <Meta />
         <Links />
       </head>
-      <body className="govuk-template__body app-body-class">
+      <body className="govuk-template__body">
         <Header title="Status" />
-        <div className="govuk-width-container" style={{ minHeight: '85vh' }}>
+        <div className="govuk-width-container">
           <PhaseBanner />
-          <div style={{ paddingTop: '10px' }}></div>
           <Outlet />
           <div style={{ paddingBottom: '20px' }}></div>
         </div>

@@ -1,7 +1,7 @@
-import { Component, IncidentType } from '@prisma/client'
 import Status from '../status'
 import { Link } from '@remix-run/react'
-import { IndexEvent } from '~/types/dao'
+import { IndexEvent } from 'app/types/dao'
+import { EventType, System } from '@prisma/client'
 
 interface ActiveEventSummaryProps {
   event: IndexEvent
@@ -13,7 +13,7 @@ export default function ActiveEventSummary({ event }: Readonly<ActiveEventSummar
   )
   const formattedDate = `${lastUpdated.toLocaleDateString()} ${lastUpdated.toLocaleTimeString()}`
   const status = event.updates ? event.updates[0].status : 'UNKNOWN'
-  const insetColour = event.event.type === IncidentType.INCIDENT ? 'red' : 'blue'
+  const insetColour = event.event.type === EventType.INCIDENT ? 'red' : 'blue'
   return (
     <div className={`govuk-inset-text govuk-inset-text--${insetColour}`}>
       <Status status={event.event.type} />
@@ -22,7 +22,7 @@ export default function ActiveEventSummary({ event }: Readonly<ActiveEventSummar
       <h3>{event.event.name}</h3>
       <p>Systems affected:</p>
       <ul className={'govuk-list'}>
-        {event.components?.map((c: Component) => <li key={c.id}>{c.name}</li>)}
+        {event.systems?.map((s: System) => <li key={s.id}>{s.name}</li>)}
       </ul>
       <p>
         Last update: <time dateTime={formattedDate}><strong>{formattedDate}</strong></time>

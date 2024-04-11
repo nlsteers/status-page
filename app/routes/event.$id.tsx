@@ -1,12 +1,12 @@
-import { LoaderFunction, LoaderFunctionArgs, json } from '@remix-run/node'
+import { type LoaderFunction, type LoaderFunctionArgs, json } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
 import EventTimeline from '../ui/event/timeline'
 import Status from '../ui/status'
 import prisma from '../.server/db'
-import { IncidentWithUpdates } from '../types/dao'
+import { type EventWithUpdates } from '../types/events'
 
 export const loader: LoaderFunction = async ({ params }: LoaderFunctionArgs) => {
-  const incident: IncidentWithUpdates = await prisma.incident.findUniqueOrThrow({
+  const event: EventWithUpdates = await prisma.event.findUniqueOrThrow({
     where: {
       id: params.id,
     },
@@ -18,19 +18,19 @@ export const loader: LoaderFunction = async ({ params }: LoaderFunctionArgs) => 
       }
     }
   })
-  const latestStatus = incident.updates ? incident.updates[0].status : 'UNKNOWN'
-  return json({incident, latestStatus})
+  const latestStatus = event.updates ? event.updates[0].status : 'UNKNOWN'
+  return json({event, latestStatus})
 }
 
 export default function Event() {
-  const {incident, latestStatus} = useLoaderData<typeof loader>()
+  const {event, latestStatus} = useLoaderData<typeof loader>()
   return (
     <div>
       <Link to="/" className="govuk-back-link">
         Back
       </Link>
-      <h1 className={'govuk-heading-l'}>{incident.name}</h1>
-      <p className={'govuk-body'}>Event ID: {incident.id}</p>
+      <h1 className={'govuk-heading-l'}>{event.name}</h1>
+      <p className={'govuk-body'}>Event ID: {event.id}</p>
 
       <table className="govuk-table">
         <thead className="govuk-table__head">
@@ -45,7 +45,7 @@ export default function Event() {
             Type
           </th>
           <td className="govuk-table__cell govuk-table__cell--numeric">
-            <Status status={incident.type} />
+            <Status status={event.type} />
           </td>
         </tr>
         <tr className="govuk-table__row">
@@ -59,7 +59,7 @@ export default function Event() {
         </tbody>
       </table>
 
-      <EventTimeline updates={incident.updates} />
+      <EventTimeline updates={event.updates} />
     </div>
   )
 }

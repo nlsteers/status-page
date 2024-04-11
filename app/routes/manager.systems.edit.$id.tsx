@@ -1,50 +1,55 @@
-import { ActionFunctionArgs, json, type LoaderFunctionArgs } from '@remix-run/node'
+import { type ActionFunctionArgs, json, type LoaderFunctionArgs, redirect } from '@remix-run/node'
 import prisma from '../.server/db'
-import { Form, Link, useActionData, useLoaderData } from '@remix-run/react'
-import { type Component, ComponentStatus } from '@prisma/client'
+import { Form, Link, useActionData, useLoaderData, useParams } from '@remix-run/react'
 import friendlyStatus from '../helper/friendlyStatus'
-import { updateComponent } from '../.server/queries'
+import { updateSystem } from '../.server/queries'
+import { type System, SystemStatus } from '@prisma/client'
+import truncate from '../helper/truncateString'
+
+export const handle = {
+  Breadcrumb: () => {
+    const params = useParams()
+    return <Link className={'govuk-breadcrumbs__link'} to={`/manager/systems/edit/${params.id}`}>Edit system {truncate(params.id as string)}</Link>
+  },
+}
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
-  const component: Component = await prisma.component.findUniqueOrThrow({
+  const system: System = await prisma.system.findUniqueOrThrow({
     where: {
       id: params.id,
     },
   })
-  return json(component)
+  return json(system)
 }
 
 export default function EditSystem() {
-  const component = useLoaderData<typeof loader>()
+  const system = useLoaderData<typeof loader>()
   const data = useActionData<typeof action>()
   return (
     <div>
-      <Link to="/manager/systems" className="govuk-back-link">
-        Back
-      </Link>
       <h1 className="govuk-heading-l">Edit System</h1>
-      <p className="govuk-body">System ID: {component.id}</p>
+      <p className="govuk-body">System ID: {system.id}</p>
       <Form method="post">
-        <input hidden={true} readOnly={true} value={component.id} name="systemId" />
+        <input hidden={true} readOnly={true} value={system.id} name="systemId" key={system.id} />
         <fieldset className="govuk-fieldset">
           <div className="govuk-form-group">
             <label className="govuk-label" htmlFor="system-name">
               System name
             </label>
-            <input className="govuk-input govuk-!-width-two-thirds" id="system-name" name="systemName" type="text" defaultValue={component.name} />
+            <input className="govuk-input govuk-!-width-two-thirds" id="system-name" name="systemName" type="text" defaultValue={system.name} key={system.id} />
           </div>
           <div className="govuk-form-group">
             <label className="govuk-label" htmlFor="system-description">
               System description
             </label>
-            <input className="govuk-input govuk-!-width-two-thirds" id="system-description" name="systemDescription" type="text" defaultValue={component.description || ''} />
+            <input className="govuk-input govuk-!-width-two-thirds" id="system-description" name="systemDescription" type="text" defaultValue={system.description || ''} key={system.id} />
           </div>
           <div className="govuk-form-group">
             <label className="govuk-label" htmlFor="system-status">
               System Status
             </label>
-            <select className="govuk-select" id="system-status" name="systemStatus" defaultValue={component.status}>
-              {Object.values(ComponentStatus).map((status) => (
+            <select className="govuk-select" id="system-status" name="systemStatus" defaultValue={system.status} key={system.id}>
+              {Object.values(SystemStatus).map((status) => (
                 <option key={status} value={status}>
                   {friendlyStatus(status)}
                 </option>
@@ -52,7 +57,7 @@ export default function EditSystem() {
             </select>
           </div>
           <button type="submit" className="govuk-button" data-module="govuk-button">
-            Update
+            Edit system
           </button>
         </fieldset>
 
@@ -64,13 +69,13 @@ export default function EditSystem() {
 
 export async function action({ request }: ActionFunctionArgs) {
   const body = await request.formData()
-  const status = body.get('systemStatus') as ComponentStatus
+  const status = body.get('systemStatus') as SystemStatus
   const name = body.get('systemName') as string
   const description = body.get('systemDescription') as string
   const id = body.get('systemId') as string
-  const result = await updateComponent(id, name, description, status)
+  const result = await updateSystem(id, name, description, status)
   if (result !== null && result !== undefined) {
-    return json({ message: `system id: ${result.id} updated` })
+    return redirect('/manager/systems')
   } else {
     return json({ message: `problem updating component` })
   }

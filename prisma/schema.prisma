@@ -13,44 +13,45 @@ datasource db {
   extensions = [uuidOssp(map: "uuid-ossp")]
 }
 
-model Component {
-  id          String              @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime?           @updatedAt
-  name        String              @db.VarChar(255)
+model System {
+  id          String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime?     @updatedAt
+  name        String        @db.VarChar(255)
   description String?
-  status      ComponentStatus     @default(OPERATIONAL)
-  incidents   IncidentComponent[]
-  live        Boolean             @default(false)
+  status      SystemStatus  @default(OPERATIONAL)
+  events      EventSystem[]
+  live        Boolean       @default(false)
 }
 
-model Incident {
-  id         String              @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  createdAt  DateTime            @default(now())
-  components IncidentComponent[]
-  name       String
-  updates    IncidentUpdate[]
-  type       IncidentType
-  active     Boolean             @default(true)
+model Event {
+  id        String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  createdAt DateTime      @default(now())
+  updatedAt DateTime?     @updatedAt
+  systems   EventSystem[]
+  name      String
+  updates   EventUpdate[]
+  type      EventType
+  active    Boolean       @default(true)
 }
 
-model IncidentUpdate {
-  id          String         @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime?      @updatedAt
+model EventUpdate {
+  id          String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime?   @updatedAt
   description String?
-  status      IncidentStatus
-  Incident    Incident       @relation(fields: [incidentId], references: [id], onDelete: Cascade)
-  incidentId  String         @db.Uuid
+  status      EventStatus
+  event       Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId     String      @db.Uuid
 }
 
-model IncidentComponent {
-  componentId String    @db.Uuid
-  component   Component @relation(fields: [componentId], references: [id], onDelete: Cascade)
-  incidentId  String    @db.Uuid
-  incident    Incident  @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+model EventSystem {
+  systemId String @db.Uuid
+  system   System @relation(fields: [systemId], references: [id], onDelete: Cascade)
+  eventId  String @db.Uuid
+  event    Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
-  @@id([componentId, incidentId])
+  @@id([systemId, eventId])
 }
 
 model EmailSubscriber {
@@ -69,7 +70,7 @@ model SMSSubscriber {
   phoneNumber String
 }
 
-enum ComponentStatus {
+enum SystemStatus {
   OPERATIONAL
   DEGRADED
   MAINTENANCE
@@ -77,17 +78,35 @@ enum ComponentStatus {
   MAJOR_OUTAGE
 }
 
-enum IncidentStatus {
+enum EventStatus {
   INVESTIGATING
   IDENTIFIED
+  UPDATE
   MONITORING
   RESOLVED
   SCHEDULED
   IN_PROGRESS
   COMPLETED
+  POSTPONED
 }
 
-enum IncidentType {
+enum MaintenanceStatus {
+  SCHEDULED
+  IN_PROGRESS
+  UPDATE
+  COMPLETED
+  POSTPONED
+}
+
+enum IncidentStatus {
+  INVESTIGATING
+  UPDATE
+  IDENTIFIED
+  MONITORING
+  RESOLVED
+}
+
+enum EventType {
   MAINTENANCE
   INCIDENT
 }
