@@ -62,8 +62,9 @@ export default function App() {
         <Header title="Status" />
         <div className="govuk-width-container">
           <PhaseBanner />
-          <Outlet />
-          <div style={{ paddingBottom: '20px' }}></div>
+          <main className="govuk-main-wrapper">
+            <Outlet />
+          </main>
         </div>
         <Footer />
         <ScrollRestoration />

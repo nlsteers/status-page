@@ -14,52 +14,54 @@ export const loader: LoaderFunction = async ({ params }: LoaderFunctionArgs) => 
       updates: {
         orderBy: {
           createdAt: 'desc',
-        }
-      }
-    }
+        },
+      },
+    },
   })
   const latestStatus = event.updates ? event.updates[0].status : 'UNKNOWN'
-  return json({event, latestStatus})
+  return json({ event, latestStatus })
 }
 
 export default function Event() {
-  const {event, latestStatus} = useLoaderData<typeof loader>()
+  const { event, latestStatus } = useLoaderData<typeof loader>()
   return (
-    <div>
-      <Link to="/" className="govuk-back-link">
-        Back
-      </Link>
-      <h1 className={'govuk-heading-l'}>{event.name}</h1>
-      <p className={'govuk-body'}>Event ID: {event.id}</p>
+    <div className="govuk-grid-row">
+      <div className={`govuk-grid-column-full`}>
+        <Link to="/" className="govuk-back-link">
+          Back
+        </Link>
+        <h1 className={'govuk-heading-l'}>{event.name}</h1>
+        <p className={'govuk-body'}>Event ID: {event.id}</p>
 
-      <table className="govuk-table">
-        <thead className="govuk-table__head">
-        <tr className="govuk-table__row">
-          <th scope="col" className="govuk-table__header govuk-!-width-one-quarter"></th>
-          <th scope="col" className="govuk-table__header"></th>
-        </tr>
-        </thead>
-        <tbody className="govuk-table__body">
-        <tr className="govuk-table__row">
-          <th scope="row" className="govuk-table__header">
-            Type
-          </th>
-          <td className="govuk-table__cell govuk-table__cell--numeric">
-            <Status status={event.type} />
-          </td>
-        </tr>
-        <tr className="govuk-table__row">
-          <th scope="row" className="govuk-table__header">
-            Status
-          </th>
-          <td className="govuk-table__cell govuk-table__cell--numeric">
-            <Status status={latestStatus} />
-          </td>
-        </tr>
-        </tbody>
-      </table>
+        <table className="govuk-table">
+          <thead className="govuk-table__head">
+            <tr className="govuk-table__row">
+              <th scope="col" className="govuk-table__header govuk-!-width-one-quarter"></th>
+              <th scope="col" className="govuk-table__header"></th>
+            </tr>
+          </thead>
+          <tbody className="govuk-table__body">
+            <tr className="govuk-table__row">
+              <th scope="row" className="govuk-table__header">
+                Type
+              </th>
+              <td className="govuk-table__cell govuk-table__cell--numeric">
+                <Status status={event.type} />
+              </td>
+            </tr>
+            <tr className="govuk-table__row">
+              <th scope="row" className="govuk-table__header">
+                Status
+              </th>
+              <td className="govuk-table__cell govuk-table__cell--numeric">
+                <Status status={latestStatus} />
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
-      <EventTimeline updates={event.updates} />
+        <EventTimeline updates={event.updates} />
+      </div>
     </div>
   )
 }
